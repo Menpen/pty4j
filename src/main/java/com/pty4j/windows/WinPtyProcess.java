@@ -1,6 +1,5 @@
 package com.pty4j.windows;
 
-import com.google.common.base.Joiner;
 import com.pty4j.PtyException;
 import com.pty4j.PtyProcess;
 import com.pty4j.WinSize;
@@ -34,7 +33,7 @@ public class WinPtyProcess extends PtyProcess {
 
   public WinPtyProcess(String[] command, String environment, String workingDirectory, boolean consoleMode) throws IOException {
     try {
-      myWinPty = new WinPty(Joiner.on(" ").join(command), workingDirectory, environment, consoleMode);
+      myWinPty = new WinPty(String.join(" ",command), workingDirectory, environment, consoleMode);
     }
     catch (PtyException e) {
       throw new IOException("Couldn't create PTY", e);

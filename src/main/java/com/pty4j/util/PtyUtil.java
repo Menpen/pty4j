@@ -1,7 +1,5 @@
 package com.pty4j.util;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.pty4j.windows.WinPty;
 import com.sun.jna.Platform;
 
@@ -10,6 +8,7 @@ import java.net.URI;
 import java.security.CodeSource;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 
 /**
  * @author traff
@@ -17,16 +16,15 @@ import java.util.Map;
 public class PtyUtil {
   public static final String OS_VERSION = System.getProperty("os.version").toLowerCase();
 
-  private final static String PTY_LIB_FOLDER = System.getenv("PTY_LIB_FOLDER");
-
   public static String[] toStringArray(Map<String, String> environment) {
     if (environment == null) return new String[0];
-    List<String> list = Lists.transform(Lists.newArrayList(environment.entrySet()), new Function<Map.Entry<String, String>, String>() {
-      public String apply(Map.Entry<String, String> entry) {
-        return entry.getKey() + "=" + entry.getValue();
-      }
-    });
-    return list.toArray(new String[list.size()]);
+
+    return environment
+            .entrySet()
+            .stream()
+            .map(entry->entry.getKey() + "=" + entry.getValue())
+            .toArray(size -> new String[size]);
+
   }
 
   /**
@@ -54,13 +52,23 @@ public class PtyUtil {
       jarFilePath = new URI(jarFilePath).getPath();
       jarFile = new File(jarFilePath);
     }
+
     return jarFile.getParentFile().getAbsolutePath();
   }
 
   public static String getPtyLibFolderPath() throws Exception {
-    if (PTY_LIB_FOLDER != null) {
-      return PTY_LIB_FOLDER;
+
+    String ptyFolderFromEnv = System.getenv("PTY_LIB_FOLDER");
+    String ptyFolderFromProperties = System.getProperty("PTY_LIB_FOLDER");
+
+    if (ptyFolderFromEnv != null) {
+      return ptyFolderFromEnv;
     }
+
+    if (ptyFolderFromProperties != null) {
+      return ptyFolderFromProperties;
+    }
+
     //Class aclass = WinPty.class.getClassLoader().loadClass("com.jediterm.pty.PtyMain");
     Class aclass = WinPty.class;
 
