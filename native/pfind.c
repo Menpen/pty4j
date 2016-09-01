@@ -62,6 +62,9 @@ char * pfind(const char *name, char * const envp[])
 		if (access(name, X_OK) == 0) {
 			return strdup(name);
 		}
+		else{
+		    fprintf(stderr, "You have no X permission $PATH.\n");
+		}
 		return NULL;
 	}
 

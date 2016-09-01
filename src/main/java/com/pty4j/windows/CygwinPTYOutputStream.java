@@ -10,43 +10,28 @@ package com.pty4j.windows;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class WinPTYOutputStream extends OutputStream {
-  private final WinPty myWinPty;
+public class CygwinPTYOutputStream extends OutputStream {
   private final NamedPipe myNamedPipe;
-  private final boolean myPatchNewline;
-  private final boolean mySendEOF;
+  private boolean myClosed;
 
-  public WinPTYOutputStream(WinPty winPty, NamedPipe namedPipe, boolean patchNewline, boolean sendEOF) {
-    // Keep a reference to WinPty to prevent it from being finalized as long as
-    // the WinPTYOutputStream object is alive.
-    myWinPty = winPty;
+  public CygwinPTYOutputStream(NamedPipe namedPipe) {
     myNamedPipe = namedPipe;
-    myPatchNewline = patchNewline;
-    mySendEOF = sendEOF;
   }
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
+    if (myClosed) {
+      return;
+    }
+
     if (b == null) {
       throw new NullPointerException();
     }
-    if (off < 0 || len < 0 || len > b.length - off) {
+    else if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length) || ((off + len) < 0)) {
       throw new IndexOutOfBoundsException();
     }
-
-    if (myPatchNewline) {
-      byte[] newBuf = new byte[len];
-      int newPos = 0;
-      for (int i = off; i < off + len; ++i) {
-        if (b[i] == '\n') {
-          newBuf[newPos++] = '\r';
-        } else {
-          newBuf[newPos++] = b[i];
-        }
-      }
-      b = newBuf;
-      off = 0;
-      len = newPos;
+    else if (len == 0) {
+      return;
     }
 
     myNamedPipe.write(b, off, len);
@@ -61,10 +46,13 @@ public class WinPTYOutputStream extends OutputStream {
 
   @Override
   public void close() throws IOException {
-    if (mySendEOF) {
-      // required for CLion+MinGW
-      write(new byte[]{'^', 'Z', '\n'});
-    }
+    myClosed = true;
     myNamedPipe.close();
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    close();
+    super.finalize();
   }
 }

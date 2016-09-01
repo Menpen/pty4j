@@ -112,7 +112,11 @@ public class PtyUtil {
     String arch = Platform.is64Bit() ? "x86_64" : "x86";
     String prefix = isWinXp() ? "xp" : arch;
 
-    return new File(new File(path, prefix), fileName);
+    if (new File(parent, prefix).exists()) {
+      return new File(new File(parent, prefix), fileName);
+    } else {
+      return new File(new File(path, prefix), fileName);
+    }
   }
 
   private static String getPlatformFolder() {
@@ -124,6 +128,10 @@ public class PtyUtil {
       result = "win";
     } else if (Platform.isLinux()) {
       result = "linux";
+    } else if (Platform.isFreeBSD()) {
+      result = "freebsd";
+    } else if (Platform.isOpenBSD()) {
+      result = "openbsd";
     } else {
       throw new IllegalStateException("Platform " + Platform.getOSType() + " is not supported");
     }
@@ -137,8 +145,8 @@ public class PtyUtil {
     if (Platform.isMac()) {
       result = "libpty.dylib";
     } else if (Platform.isWindows()) {
-      result = "libwinpty.dll";
-    } else if (Platform.isLinux()) {
+      result = "winpty.dll";
+    } else if (Platform.isLinux() || Platform.isFreeBSD() || Platform.isOpenBSD()) {
       result = "libpty.so";
     } else {
       throw new IllegalStateException("Platform " + Platform.getOSType() + " is not supported");
