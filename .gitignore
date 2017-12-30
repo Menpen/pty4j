@@ -4,5 +4,4 @@ generated
 .idea/
 *.iml
 target/
-*.jar
 
