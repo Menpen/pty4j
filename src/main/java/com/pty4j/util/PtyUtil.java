@@ -119,7 +119,7 @@ public class PtyUtil {
     }
   }
 
-  private static String getPlatformFolder() {
+  public static String getPlatformFolder() {
     String result;
 
     if (Platform.isMac()) {
@@ -139,7 +139,7 @@ public class PtyUtil {
     return result;
   }
 
-  private static String getNativeLibraryName() {
+  public static String getNativeLibraryName() {
     String result;
 
     if (Platform.isMac()) {
